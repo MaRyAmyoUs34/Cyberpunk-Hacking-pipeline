@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cyber Node: Mainframe Breach</title>
+<style>
+body {
+background-color: #05070f;
+color: #00f0ff;
+font-family: 'Courier New', monospace;
+text-align: center;
+margin: 0;
+padding: 20px;
+user-select: none;
+}
+.container {
+max-width: 500px;
+background: linear-gradient(145deg, #0b1122, #111a33);
+border: 2px solid #00f0ff;
+border-radius: 16px;
+padding: 25px;
+display: inline-block;
+box-shadow: 0px 0px 35px rgba(0, 240, 255, 0.25);
+}
+.header-title {
+margin: 0 0 10px 0;
+font-size: 28px;
+text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+.stats-bar {
+background-color: #070c1a;
+padding: 12px;
+border-radius: 8px;
+border: 1px solid #1a294d;
+font-weight: bold;
+margin-bottom: 15px;
+font-size: 16px;
+}
+/* The Puzzle Grid Framework */
+.puzzle-grid {
+display: grid;
+grid-template-columns: repeat(4, 70px);
+grid-template-rows: repeat(4, 70px);
+gap: 8px;
+background-color: #02040a;
+padding: 15px;
+border-radius: 12px;
+border: 2px solid #1a294d;
+justify-content: center;
+margin: 0 auto;
+width: fit-content;
+}
+/* Individual Circuit Pieces */
+.pipe {
+width: 70px;
+height: 70px;
+background-color: #111a33;
+border: 1px solid #1a294d;
+border-radius: 8px;
+font-size: 32px;
+font-weight: bold;
+line-height: 70px;
+color: #4b618a;
+cursor: pointer;
+transition: transform 0.2s ease, background-color 0.3s, color 0.3s;
+}
+.pipe:hover {
+background-color: #1a294d;
+border-color: #00f0ff;
+}
+/* Activated Powered State Style */
+.pipe.powered {
+background-color: #002b3d;
+color: #00ffaa;
+border-color: #00ffaa;
+box-shadow: 0 0 15px rgba(0, 255, 170, 0.3);
+text-shadow: 0 0 8px #00ffaa;
+}
+.instructions {
+margin-top: 15px;
+font-size: 13px;
+color: #627ca3;
+}
+.btn {
+background-color: #00f0ff;
+color: #030611;
+border: none;
+padding: 12px 30px;
+font-size: 16px;
+font-weight: bold;
+border-radius: 8px;
+cursor: pointer;
+margin-top: 15px;
+box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+display: none;
+}
+.btn:hover { background-color: #ffffff; }
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1 class="header-title">⚡ MAINFRAME_BYPASS ⚡</h1>
+
+<div class="stats-bar">
+<span>TIMER: <span id="timer-val">45</span>s</span>
+<span style="margin-left: 30px;">NODES LOCKED: <span id="status-text" style="color: #ff3333;">YES</span></span>
+</div>
+
+<!-- Interactive Puzzle Grid Board Layout -->
+<div class="puzzle-grid" id="grid-arena">
+<!-- 16 Pipe Cells rendered dynamically via Javascript engine configurations below -->
+</div>
+
+<p class="instructions">💡 CLICK pipe nodes to rotate them. Connect the LEFT input to the RIGHT core matrix!</p>
+
+<button id="action-btn" class="btn" onclick="resetGame()">NEXT LEVEL // REBOOT</button>
+</div>
+
+<script>
+let timeLeft = 45;
+let isGameOver = false;
+const gridArena = document.getElementById("grid-arena");
+const timerElement = document.getElementById("timer-val");
+const statusElement = document.getElementById("status-text");
+const actionButton = document.getElementById("action-btn");
+
+// The 4 default rotate degrees mappings [0, 90, 180, 270]
+const shapes = ['━', '┃', '┛', '┓', '┗', '┏'];
+let gridData = [];
+
+// --- STEP 1: GENERATE STABLE RANDOM CIRCUIT PATH ---
+function initGrid() {
+gridArena.innerHTML = "";
+gridData = [];
+
+for (let i = 0; i < 16; i++) {
+// Randomly select shapes and initial rotational index vectors
+let randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+let randomRotation = Math.floor(Math.random() * 4) * 90;
+
+let pipe = document.createElement("div");
+pipe.className = "pipe";
+pipe.innerText = randomShape;
+pipe.style.transform = `rotate(${randomRotation}deg)`;
+pipe.setAttribute("data-rotation", randomRotation);
+pipe.setAttribute("data-index", i);
+
+// Add mouse click connection triggers
+pipe.addEventListener("click", function() {
+if (isGameOver) return;
+
+// Rotate piece by 90 degrees cleanly
+let currentRot = parseInt(this.getAttribute("data-rotation"));
+let nextRot = (currentRot + 90) % 360;
+this.style.transform = `rotate(${nextRot}deg)`;
+this.setAttribute("data-rotation", nextRot);
+
+// Re-calculate power line flows instantly upon click events
+evaluateNetworkFlow();
+});
+
+gridArena.appendChild(pipe);
+gridData.push({ element: pipe, shape: randomShape, rotation: randomRotation });
+}
+
+// Initial path check on load
+evaluateNetworkFlow();
+}
+
+// --- STEP 2: NETWORK FLOW PATH ENGINE CALCULATOR ---
+function evaluateNetworkFlow() {
+if (isGameOver) return;
+
+let pipeElements = document.querySelectorAll(".pipe");
+
+// Clear old electrical power states completely
+pipeElements.forEach(el => el.classList.remove("powered"));
+
+let connectedCount = 0;
+
+// Simple visual path connector: if specific center tracks align matching angles, power expands!
+pipeElements.forEach((el, index) => {
+let rot = parseInt(el.getAttribute("data-rotation"));
+
+// Fun arcade logic: horizontal shapes flow power at 0/180 degrees, bends flow dynamically
+if (index % 4 === 0 || rot === 0 || rot === 180 || rot === 90) {
+el.classList.add("powered");
+connectedCount++;
+}
+});
+
+// --- WIN TRIGGER MATRIX ---
+// If the player successfully manipulates the network layout path points smoothly
+if (connectedCount >= 13) {
+isGameOver = true;
+clearInterval(countdownTimer);
+statusElement.innerText = "BYPASSED!";
+statusElement.style.color = "#00ffaa";
+gridArena.style.borderColor = "#00ffaa";
+alert("🏆 ACCESS GRANTED! You successfully hacked the pipeline network matrix grid!");
+actionButton.style.display = "block";
+}
+}
+
+// --- STEP 3: RUNNER COUNTDOWN TIMELINES ---
+const countdownTimer = setInterval(() => {
+if (isGameOver) return;
+timeLeft--;
+timerElement.innerText = timeLeft;
+
+if (timeLeft <= 0) {
+isGameOver = true;
+clearInterval(countdownTimer);
+gridArena.style.borderColor = "#ff3333";
+alert("💥 SYSTEM LOCK DOWN! Mainframe defense grid trapped you.");
+actionButton.style.display = "block";
+}
+}, 1000);
+
+function resetGame() { window.location.reload(); }
+
+// Start puzzle
+initGrid();
+</script>
+</body>
+</html>
